@@ -11,6 +11,7 @@ import DailyForecast from '@/components/weather/DailyForecast';
 import WeatherMetrics from '@/components/weather/WeatherMetrics';
 import BrandLogo from '@/components/weather/BrandLogo';
 import WeatherLoader from '@/components/weather/WeatherLoader';
+import LocationPrompt from '@/components/weather/LocationPrompt';
 
 const stagger = {
   hidden: {},
@@ -39,6 +40,8 @@ const Dashboard: React.FC = () => {
     <div className="relative min-h-screen">
       <WeatherBackground condition={weather?.current.condition || 'sunny'} />
 
+      <LocationPrompt />
+      
       <motion.div
         className="relative z-10 max-w-5xl mx-auto px-4 py-6 md:py-8"
         variants={stagger}
@@ -70,14 +73,15 @@ const Dashboard: React.FC = () => {
           <CurrentWeather />
         </motion.div>
 
-        {/* Forecasts & Metrics */}
+        {/* Weather Metrics */}
+        <motion.div variants={fadeUp}>
+          <WeatherMetrics />
+        </motion.div>
+
+        {/* Forecasts */}
         <motion.div variants={fadeUp} className="space-y-4 pb-12">
           <HourlyForecast />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DailyForecast />
-            <WeatherMetrics />
-          </div>
+          <DailyForecast />
         </motion.div>
       </motion.div>
     </div>

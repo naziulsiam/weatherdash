@@ -98,13 +98,49 @@ const generateDaily = (baseTemp: number, condition: WeatherCondition): DailyData
   });
 };
 
-export const PRESET_CITIES = [
-  { name: 'Miami', country: 'US', timezone: 'America/New_York' },
-  { name: 'London', country: 'UK', timezone: 'Europe/London' },
-  { name: 'Tokyo', country: 'JP', timezone: 'Asia/Tokyo' },
-  { name: 'Dubai', country: 'AE', timezone: 'Asia/Dubai' },
-  { name: 'Reykjavik', country: 'IS', timezone: 'Atlantic/Reykjavik' },
+export interface City {
+  name: string;
+  country: string;
+  timezone: string;
+  lat: number;
+  lng: number;
+}
+
+export const PRESET_CITIES: City[] = [
+  { name: 'Miami', country: 'US', timezone: 'America/New_York', lat: 25.7617, lng: -80.1918 },
+  { name: 'London', country: 'UK', timezone: 'Europe/London', lat: 51.5074, lng: -0.1278 },
+  { name: 'Tokyo', country: 'JP', timezone: 'Asia/Tokyo', lat: 35.6762, lng: 139.6503 },
+  { name: 'Dubai', country: 'AE', timezone: 'Asia/Dubai', lat: 25.2048, lng: 55.2708 },
+  { name: 'Reykjavik', country: 'IS', timezone: 'Atlantic/Reykjavik', lat: 64.1466, lng: -21.9426 },
 ];
+
+// Calculate distance between two coordinates using Haversine formula
+export const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Find the nearest city to given coordinates
+export const findNearestCity = (lat: number, lng: number): City => {
+  let nearest = PRESET_CITIES[0];
+  let minDistance = Infinity;
+  
+  for (const city of PRESET_CITIES) {
+    const distance = calculateDistance(lat, lng, city.lat, city.lng);
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearest = city;
+    }
+  }
+  
+  return nearest;
+};
 
 export const weatherScenarios: Record<string, WeatherData> = {
   'Miami': {
