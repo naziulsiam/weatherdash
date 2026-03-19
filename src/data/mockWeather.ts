@@ -32,7 +32,7 @@ export interface MetricSparkline {
 export interface WeatherData {
   location: string;
   country: string;
-  timezone: string;
+  timezone: number;
   current: {
     temp: number;
     feelsLike: number;
@@ -101,17 +101,17 @@ const generateDaily = (baseTemp: number, condition: WeatherCondition): DailyData
 export interface City {
   name: string;
   country: string;
-  timezone: string;
+  timezone: number;
   lat: number;
   lng: number;
 }
 
 export const PRESET_CITIES: City[] = [
-  { name: 'Miami', country: 'US', timezone: 'America/New_York', lat: 25.7617, lng: -80.1918 },
-  { name: 'London', country: 'UK', timezone: 'Europe/London', lat: 51.5074, lng: -0.1278 },
-  { name: 'Tokyo', country: 'JP', timezone: 'Asia/Tokyo', lat: 35.6762, lng: 139.6503 },
-  { name: 'Dubai', country: 'AE', timezone: 'Asia/Dubai', lat: 25.2048, lng: 55.2708 },
-  { name: 'Reykjavik', country: 'IS', timezone: 'Atlantic/Reykjavik', lat: 64.1466, lng: -21.9426 },
+  { name: 'Miami', country: 'US', timezone: -18000, lat: 25.7617, lng: -80.1918 },
+  { name: 'London', country: 'UK', timezone: 0, lat: 51.5074, lng: -0.1278 },
+  { name: 'Tokyo', country: 'JP', timezone: 32400, lat: 35.6762, lng: 139.6503 },
+  { name: 'Dubai', country: 'AE', timezone: 14400, lat: 25.2048, lng: 55.2708 },
+  { name: 'Reykjavik', country: 'IS', timezone: 0, lat: 64.1466, lng: -21.9426 },
 ];
 
 // Calculate distance between two coordinates using Haversine formula
@@ -130,7 +130,7 @@ export const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2
 export const findNearestCity = (lat: number, lng: number): City => {
   let nearest = PRESET_CITIES[0];
   let minDistance = Infinity;
-  
+
   for (const city of PRESET_CITIES) {
     const distance = calculateDistance(lat, lng, city.lat, city.lng);
     if (distance < minDistance) {
@@ -138,7 +138,7 @@ export const findNearestCity = (lat: number, lng: number): City => {
       nearest = city;
     }
   }
-  
+
   return nearest;
 };
 
@@ -146,7 +146,7 @@ export const weatherScenarios: Record<string, WeatherData> = {
   'Miami': {
     location: 'Miami',
     country: 'US',
-    timezone: 'America/New_York',
+    timezone: -18000,
     current: {
       temp: 88,
       feelsLike: 95,
@@ -178,7 +178,7 @@ export const weatherScenarios: Record<string, WeatherData> = {
   'Tokyo': {
     location: 'Tokyo',
     country: 'JP',
-    timezone: 'Asia/Tokyo',
+    timezone: 32400,
     current: {
       temp: 68,
       feelsLike: 66,
@@ -207,7 +207,7 @@ export const weatherScenarios: Record<string, WeatherData> = {
   'Dubai': {
     location: 'Dubai',
     country: 'AE',
-    timezone: 'Asia/Dubai',
+    timezone: 14400,
     current: {
       temp: 112,
       feelsLike: 120,
@@ -238,7 +238,7 @@ export const weatherScenarios: Record<string, WeatherData> = {
   'London': {
     location: 'London',
     country: 'UK',
-    timezone: 'Europe/London',
+    timezone: 0,
     current: {
       temp: 52,
       feelsLike: 48,
@@ -269,7 +269,7 @@ export const weatherScenarios: Record<string, WeatherData> = {
   'Reykjavik': {
     location: 'Reykjavik',
     country: 'IS',
-    timezone: 'Atlantic/Reykjavik',
+    timezone: 0,
     current: {
       temp: 30,
       feelsLike: 22,

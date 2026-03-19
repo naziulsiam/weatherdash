@@ -22,7 +22,7 @@ const generateSparklines = (hourly: any[]) => {
 const convertApiResponse = (apiData: WeatherApiResponse): WeatherData => {
   // Generate alerts based on weather conditions
   const alerts: WeatherAlert[] = [];
-  
+
   if (apiData.current.condition === 'stormy') {
     alerts.push({
       id: 'storm',
@@ -51,7 +51,7 @@ const convertApiResponse = (apiData: WeatherApiResponse): WeatherData => {
   return {
     location: apiData.location,
     country: apiData.country,
-    timezone: `UTC${apiData.timezone >= 0 ? '+' : ''}${apiData.timezone / 3600}`,
+    timezone: apiData.timezone,
     current: apiData.current,
     hourly: apiData.hourly,
     daily: apiData.daily,
@@ -62,6 +62,14 @@ const convertApiResponse = (apiData: WeatherApiResponse): WeatherData => {
 
 // Check if we have an API key
 const hasApiKey = !!import.meta.env.VITE_OPENWEATHER_API_KEY;
+console.log('WeatherContext: hasApiKey =', hasApiKey);
+if (import.meta.env.PROD) {
+  console.log('WeatherContext: Running in production mode');
+}
+console.log('WeatherContext: hasApiKey =', hasApiKey);
+if (import.meta.env.PROD) {
+  console.log('WeatherContext: Running in production mode');
+}
 
 interface WeatherContextType {
   weather: WeatherData | null;
@@ -143,6 +151,7 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setLoading(false);
         setTimeout(() => setReady(true), 100);
       } catch (err) {
+        console.error('WeatherContext: fetchWeatherByCoords error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
         setLoading(false);
       }
@@ -162,19 +171,19 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [selectCity]);
 
   return (
-    <WeatherContext.Provider 
-      value={{ 
-        weather, 
-        loading, 
+    <WeatherContext.Provider
+      value={{
+        weather,
+        loading,
         error,
-        unit, 
-        setUnit, 
-        selectCity, 
+        unit,
+        setUnit,
+        selectCity,
         selectCityByCoords,
-        selectedCity, 
-        convertTemp, 
-        dismissAlert, 
-        dismissedAlerts, 
+        selectedCity,
+        convertTemp,
+        dismissAlert,
+        dismissedAlerts,
         ready,
         useRealApi,
       }}

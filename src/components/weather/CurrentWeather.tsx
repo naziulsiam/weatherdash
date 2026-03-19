@@ -46,12 +46,27 @@ const CurrentWeather: React.FC = () => {
   }
 
   const { current, location, country, timezone } = weather;
-  const localTime = new Date().toLocaleTimeString('en-US', {
-    timeZone: timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+
+  // Safely calculate local time using UTC offset in seconds
+  const getLocalTime = () => {
+    try {
+      const now = new Date();
+      // Adjust system time to UTC, then add the city offset
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const cityTime = new Date(utc + (timezone * 1000));
+
+      return cityTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch (e) {
+      console.error('Time adjustment error:', e);
+      return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+  };
+
+  const localTime = getLocalTime();
 
   const temp = convertTemp(current.temp);
   const feelsLike = convertTemp(current.feelsLike);
