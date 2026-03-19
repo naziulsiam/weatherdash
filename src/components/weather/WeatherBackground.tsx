@@ -26,6 +26,10 @@ const PALETTES: Record<WeatherCondition, { mesh: string[]; accent: string }> = {
     mesh: ['hsl(270 50% 25% / 0.5)', 'hsl(250 60% 30% / 0.4)', 'hsl(280 40% 20% / 0.35)', 'hsl(240 50% 35% / 0.25)'],
     accent: 'hsl(270 60% 60%)',
   },
+  'clear-night': {
+    mesh: ['hsl(240 60% 15% / 0.5)', 'hsl(260 50% 10% / 0.4)', 'hsl(280 40% 12% / 0.45)', 'hsl(230 50% 20% / 0.3)'],
+    accent: 'hsl(240 50% 80%)',
+  },
 };
 
 const WeatherBackground: React.FC<Props> = ({ condition }) => {
@@ -40,7 +44,7 @@ const WeatherBackground: React.FC<Props> = ({ condition }) => {
       duration: `${4 + Math.random() * 4}s`,
       size: 1 + Math.random() * 3,
     })),
-  []);
+    []);
 
   const rainDrops = useMemo(() =>
     Array.from({ length: 100 }, (_, i) => ({
@@ -51,7 +55,7 @@ const WeatherBackground: React.FC<Props> = ({ condition }) => {
       opacity: 0.3 + Math.random() * 0.5,
       height: 18 + Math.random() * 20,
     })),
-  []);
+    []);
 
   const snowFlakes = useMemo(() =>
     Array.from({ length: 90 }, (_, i) => ({
@@ -62,7 +66,7 @@ const WeatherBackground: React.FC<Props> = ({ condition }) => {
       size: 2 + Math.random() * 6,
       opacity: 0.4 + Math.random() * 0.5,
     })),
-  []);
+    []);
 
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
@@ -208,6 +212,22 @@ const WeatherBackground: React.FC<Props> = ({ condition }) => {
           ))}
           <div className="absolute top-[25%] left-[35%] w-[350px] h-[350px] rounded-full blur-[80px] animate-sun-pulse"
             style={{ background: 'hsl(270 50% 50% / 0.08)' }} />
+        </>
+      )}
+
+      {/* CLEAR NIGHT: Moon + Twinkling Stars */}
+      {condition === 'clear-night' && (
+        <>
+          <div className="absolute top-[10%] right-[15%] w-[300px] h-[300px] rounded-full blur-[100px]"
+            style={{ background: 'radial-gradient(circle, hsl(230 60% 30% / 0.3), transparent 70%)' }} />
+          <div className="absolute top-[15%] right-[20%] w-[80px] h-[80px] rounded-full bg-indigo-50/10 backdrop-blur-md shadow-[0_0_40px_rgba(255,255,255,0.1)]" />
+          {particles.slice(0, 30).map(p => (
+            <div key={p.id} className="absolute rounded-full bg-white animate-pulse"
+              style={{
+                left: p.left, top: p.top, width: '1.5px', height: '1.5px',
+                opacity: 0.4, animationDelay: p.delay, animationDuration: '3s'
+              }} />
+          ))}
         </>
       )}
 

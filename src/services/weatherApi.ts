@@ -4,7 +4,10 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 // Map OpenWeather condition codes to our app's conditions
-const mapCondition = (code: number): WeatherCondition => {
+// Map OpenWeather condition codes to our app's conditions
+const mapCondition = (code: number, icon: string = '01d'): WeatherCondition => {
+  const isNight = icon.endsWith('n');
+
   // Thunderstorm
   if (code >= 200 && code < 300) return 'stormy';
   // Drizzle / Rain
@@ -14,11 +17,11 @@ const mapCondition = (code: number): WeatherCondition => {
   // Atmosphere (fog, mist, etc.)
   if (code >= 700 && code < 800) return 'cloudy';
   // Clear
-  if (code === 800) return 'sunny';
+  if (code === 800) return isNight ? 'clear-night' : 'sunny';
   // Clouds
   if (code > 800) return 'cloudy';
-  
-  return 'sunny';
+
+  return isNight ? 'clear-night' : 'sunny';
 };
 
 // Get weather description from code
@@ -98,34 +101,34 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
   const currentRes = await fetch(
     `${BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=imperial`
   );
-  
+
   if (!currentRes.ok) {
     if (currentRes.status === 404) throw new Error('City not found');
     if (currentRes.status === 401) throw new Error('Invalid API key');
     throw new Error('Failed to fetch weather data');
   }
-  
+
   const currentData = await currentRes.json();
 
   // 5-day forecast (includes 3-hour intervals)
   const forecastRes = await fetch(
     `${BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=imperial`
   );
-  
+
   if (!forecastRes.ok) {
     throw new Error('Failed to fetch forecast data');
   }
-  
+
   const forecastData = await forecastRes.json();
 
   // Process hourly forecast (next 24 hours, using 3-hour intervals)
   const hourly = forecastData.list.slice(0, 8).map((item: any) => ({
-    time: new Date(item.dt * 1000).toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      hour12: true 
+    time: new Date(item.dt * 1000).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      hour12: true
     }),
     temp: Math.round(item.main.temp),
-    condition: mapCondition(item.weather[0].id),
+    condition: mapCondition(item.weather[0].id, item.weather[0].icon),
     precipitation: Math.round((item.pop || 0) * 100), // Probability of precipitation
   }));
 
@@ -134,7 +137,7 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
   forecastData.list.forEach((item: any) => {
     const date = new Date(item.dt * 1000);
     const dayKey = date.toLocaleDateString('en-US', { weekday: 'short' });
-    
+
     if (!dailyMap.has(dayKey)) {
       dailyMap.set(dayKey, {
         day: dayKey,
@@ -146,7 +149,7 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
         wind: item.wind.speed,
       });
     }
-    
+
     const day = dailyMap.get(dayKey);
     day.temps.push(item.main.temp);
     day.conditions.push(item.weather[0].id);
@@ -167,7 +170,7 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
       date: day.date,
       high: Math.round(Math.max(...day.temps)),
       low: Math.round(Math.min(...day.temps)),
-      condition: mapCondition(Number(mostCommonCondition)),
+      condition: mapCondition(Number(mostCommonCondition), '01d'), // Daily usually shows day version
       precipitation: day.precipitation,
       humidity: day.humidity,
       wind: Math.round(day.wind),
@@ -196,7 +199,7 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
     current: {
       temp: Math.round(currentData.main.temp),
       feelsLike: Math.round(currentData.main.feels_like),
-      condition: mapCondition(currentData.weather[0].id),
+      condition: mapCondition(currentData.weather[0].id, currentData.weather[0].icon),
       description: getDescription(currentData.weather[0].id),
       humidity: currentData.main.humidity,
       windSpeed: Math.round(currentData.wind.speed),
@@ -220,13 +223,13 @@ export const fetchWeatherByCoords = async (lat: number, lon: number): Promise<We
   const currentRes = await fetch(
     `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`
   );
-  
+
   if (!currentRes.ok) {
     throw new Error('Failed to fetch weather data');
   }
-  
+
   const currentData = await currentRes.json();
-  
+
   // Reuse the city fetch logic but with the city name from coordinates
   return fetchWeatherByCity(currentData.name);
 };
@@ -259,7 +262,7 @@ export const searchCities = async (query: string): Promise<CitySearchResult[]> =
     }
 
     const data = await response.json();
-    
+
     return data.map((item: any) => ({
       name: item.name,
       country: item.country,

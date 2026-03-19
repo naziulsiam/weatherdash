@@ -9,6 +9,8 @@ const LocationPrompt: React.FC = () => {
   const { selectCity, selectCityByCoords, useRealApi } = useWeather();
   const [show, setShow] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if we've already asked for location permission in this session
@@ -27,33 +29,46 @@ const LocationPrompt: React.FC = () => {
   const handleAllow = () => {
     sessionStorage.setItem('locationPrompted', 'true');
     setShow(false);
-    
+
     if ('geolocation' in navigator) {
+      setIsFetching(true);
+      setErrorMessage(null);
+
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          
-          if (useRealApi) {
-            // Use actual coordinates with API
-            try {
+          console.log('LocationPrompt: Got coordinates', latitude, longitude);
+
+          try {
+            if (useRealApi) {
               await selectCityByCoords(latitude, longitude);
-            } catch (error) {
-              console.log('Failed to fetch weather for location, falling back to nearest city');
+            } else {
               const nearestCity = findNearestCity(latitude, longitude);
               selectCity(nearestCity.name);
             }
-          } else {
-            // Use nearest preset city for mock data
-            const nearestCity = findNearestCity(latitude, longitude);
-            selectCity(nearestCity.name);
+            setIsFetching(false);
+            setShow(false);
+          } catch (error) {
+            console.error('LocationPrompt: selectCity Error', error);
+            setIsFetching(false);
+            setErrorMessage('Could not find weather for your location. Please try manual search.');
+            setTimeout(() => setShow(false), 3000);
           }
         },
         (error) => {
-          console.log('Geolocation error:', error);
-          // If geolocation fails, just use default
+          console.error('LocationPrompt: Geolocation error:', error);
+          setIsFetching(false);
+          let msg = 'Location access denied or failed.';
+          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission was denied.';
+          if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
+          setErrorMessage(msg);
+          setTimeout(() => setShow(false), 3000);
         },
         { timeout: 10000, enableHighAccuracy: false }
       );
+    } else {
+      setErrorMessage('Geolocation is not supported by your browser.');
+      setTimeout(() => setShow(false), 3000);
     }
   };
 
@@ -107,19 +122,33 @@ const LocationPrompt: React.FC = () => {
 
             {/* Buttons */}
             <div className="flex gap-3">
-              <button
-                onClick={handleDismiss}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
-              >
-                Not Now
-              </button>
-              <button
-                onClick={handleAllow}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
-              >
-                Allow
-              </button>
+              {!isFetching ? (
+                <>
+                  <button
+                    onClick={handleDismiss}
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    Not Now
+                  </button>
+                  <button
+                    onClick={handleAllow}
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    Allow
+                  </button>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center py-2 animate-pulse">
+                  <span className="text-sm font-medium text-primary">Fetching Location...</span>
+                </div>
+              )}
             </div>
+
+            {errorMessage && (
+              <p className="text-[12px] text-red-400 text-center mt-3 font-medium animate-in fade-in slide-in-from-bottom-2">
+                {errorMessage}
+              </p>
+            )}
 
             {/* Privacy note */}
             <p className="text-[10px] text-muted-foreground text-center mt-4">

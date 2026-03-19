@@ -19,6 +19,22 @@ const conditionStyles: Record<WeatherCondition, { gradient: string; elements: Re
       </>
     ),
   },
+  'clear-night': {
+    gradient: 'from-indigo-900/40 via-purple-900/20 to-slate-900/40',
+    elements: (
+      <>
+        <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] rounded-full bg-indigo-100/20 blur-xl animate-pulse" />
+        <div className="absolute top-[25%] right-[25%] w-[20%] h-[20%] rounded-full bg-indigo-50/40" />
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div key={i} className="absolute rounded-full bg-white opacity-40 animate-pulse" style={{
+            top: `${Math.random() * 80}%`, left: `${Math.random() * 80}%`,
+            width: `${1 + Math.random() * 2}px`, height: `${1 + Math.random() * 2}px`,
+            animationDelay: `${Math.random() * 5}s`,
+          }} />
+        ))}
+      </>
+    ),
+  },
   cloudy: {
     gradient: 'from-gray-400/10 via-slate-500/15 to-gray-300/10',
     elements: (

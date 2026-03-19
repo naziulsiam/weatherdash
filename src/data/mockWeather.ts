@@ -1,4 +1,4 @@
-export type WeatherCondition = 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'stormy';
+export type WeatherCondition = 'sunny' | 'clear-night' | 'cloudy' | 'rainy' | 'snowy' | 'stormy';
 
 export interface HourlyData {
   time: string;
