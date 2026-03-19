@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from 'lucide-react';
 import { findNearestCity } from '@/data/mockWeather';
 import { useWeather } from '@/context/WeatherContext';
+import { fetchWeatherByCoords } from '@/services/weatherApi';
 
 const LocationPrompt: React.FC = () => {
-  const { selectCity } = useWeather();
+  const { selectCity, selectCityByCoords, useRealApi } = useWeather();
   const [show, setShow] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
 
@@ -29,10 +30,23 @@ const LocationPrompt: React.FC = () => {
     
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          const nearestCity = findNearestCity(latitude, longitude);
-          selectCity(nearestCity.name);
+          
+          if (useRealApi) {
+            // Use actual coordinates with API
+            try {
+              await selectCityByCoords(latitude, longitude);
+            } catch (error) {
+              console.log('Failed to fetch weather for location, falling back to nearest city');
+              const nearestCity = findNearestCity(latitude, longitude);
+              selectCity(nearestCity.name);
+            }
+          } else {
+            // Use nearest preset city for mock data
+            const nearestCity = findNearestCity(latitude, longitude);
+            selectCity(nearestCity.name);
+          }
         },
         (error) => {
           console.log('Geolocation error:', error);

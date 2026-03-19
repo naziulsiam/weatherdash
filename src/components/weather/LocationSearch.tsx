@@ -19,7 +19,7 @@ const useDebounce = (value: string, delay: number) => {
 };
 
 const LocationSearch: React.FC = () => {
-  const { selectCity, selectedCity, convertTemp, unit, useRealApi } = useWeather();
+  const { selectCity, selectCityByCoords, selectedCity, convertTemp, unit, useRealApi } = useWeather();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
@@ -55,10 +55,23 @@ const LocationSearch: React.FC = () => {
   const handleGeolocate = () => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          const nearestCity = findNearestCity(latitude, longitude);
-          selectCity(nearestCity.name);
+          
+          if (useRealApi) {
+            // Use actual coordinates with API
+            try {
+              await selectCityByCoords(latitude, longitude);
+            } catch (error) {
+              console.log('Failed to fetch weather for location, falling back to nearest city');
+              const nearestCity = findNearestCity(latitude, longitude);
+              selectCity(nearestCity.name);
+            }
+          } else {
+            // Use nearest preset city for mock data
+            const nearestCity = findNearestCity(latitude, longitude);
+            selectCity(nearestCity.name);
+          }
         },
         () => console.log('Geolocation denied'),
         { timeout: 10000, enableHighAccuracy: false }
@@ -81,7 +94,8 @@ const LocationSearch: React.FC = () => {
   // Determine what to show in dropdown
   const showApiResults = useRealApi && searchResults.length > 0;
   const showPresetResults = !useRealApi && filteredPresetCities.length > 0;
-  const showNoResults = searchQuery.length >= 2 && !isSearching && 
+  // Only show "no results" after user has stopped typing for a while (debounced)
+  const showNoResults = debouncedQuery.length >= 2 && !isSearching && 
     ((useRealApi && searchResults.length === 0) || (!useRealApi && filteredPresetCities.length === 0));
 
   return (

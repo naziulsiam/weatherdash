@@ -70,6 +70,7 @@ interface WeatherContextType {
   unit: 'F' | 'C';
   setUnit: (u: 'F' | 'C') => void;
   selectCity: (city: string) => void;
+  selectCityByCoords: (lat: number, lon: number) => Promise<void>;
   selectedCity: string;
   convertTemp: (f: number) => number;
   dismissAlert: (id: string) => void;
@@ -128,7 +129,7 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [useRealApi]);
 
-  const loadWeatherByCoords = useCallback(async (lat: number, lon: number) => {
+  const selectCityByCoords = useCallback(async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
     setDismissedAlerts([]);
@@ -169,6 +170,7 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
         unit, 
         setUnit, 
         selectCity, 
+        selectCityByCoords,
         selectedCity, 
         convertTemp, 
         dismissAlert, 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useWeather } from '@/context/WeatherContext';
 import { motion } from 'framer-motion';
 import WeatherVisualizer from './WeatherVisualizer';
+import WeatherConditionBadge from './WeatherConditionBadge';
 import { MapPin } from 'lucide-react';
 
 const CountUpTemp: React.FC<{ value: number }> = ({ value }) => {
@@ -96,6 +97,16 @@ const CurrentWeather: React.FC = () => {
               </span>
             )}
           </div>
+
+          {/* Real-time condition badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-3"
+          >
+            <WeatherConditionBadge />
+          </motion.div>
 
           <motion.p
             initial={{ opacity: 0 }}
