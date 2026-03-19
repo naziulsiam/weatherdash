@@ -162,8 +162,11 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
       acc[id] = (acc[id] || 0) + 1;
       return acc;
     }, {});
-    const mostCommonCondition = Object.entries(conditionCounts)
-      .sort((a: any, b: any) => b[1] - a[1])[0][0];
+
+    const sortedConditions = Object.entries(conditionCounts)
+      .sort((a: any, b: any) => b[1] - a[1]);
+
+    const mostCommonCondition = sortedConditions.length > 0 ? sortedConditions[0][0] : 800;
 
     return {
       day: day.day,
