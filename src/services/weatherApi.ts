@@ -121,16 +121,27 @@ const fetchWeatherData = async (query: string): Promise<WeatherApiResponse> => {
 
   const forecastData = await forecastRes.json();
 
-  // Process hourly forecast (next 24 hours, using 3-hour intervals)
-  const hourly = forecastData.list.slice(0, 8).map((item: any) => ({
-    time: new Date(item.dt * 1000).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      hour12: true
-    }),
-    temp: Math.round(item.main.temp),
-    condition: mapCondition(item.weather[0].id, item.weather[0].icon),
-    precipitation: Math.round((item.pop || 0) * 100), // Probability of precipitation
-  }));
+  // Process hourly forecast (interpolate 3-hour blocks into exactly 24 1-hour intervals)
+  const hourly: any[] = [];
+  for (let i = 0; i < 8; i++) {
+    const currentItem = forecastData.list[i];
+    const nextItem = forecastData.list[i + 1] || currentItem;
+    
+    for (let j = 0; j < 3; j++) {
+      const ratio = j / 3;
+      const interpTemp = currentItem.main.temp + (nextItem.main.temp - currentItem.main.temp) * ratio;
+      const interpPop = (currentItem.pop || 0) + ((nextItem.pop || 0) - (currentItem.pop || 0)) * ratio;
+      
+      const time = new Date(currentItem.dt * 1000 + j * 3600 * 1000);
+      
+      hourly.push({
+        time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        temp: Math.round(interpTemp),
+        condition: mapCondition(currentItem.weather[0].id, currentItem.weather[0].icon),
+        precipitation: Math.round(interpPop * 100),
+      });
+    }
+  }
 
   // Process daily forecast (aggregate by day)
   const dailyMap = new Map();
@@ -224,7 +235,22 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
 
 // Fetch weather by coordinates (for geolocation)
 export const fetchWeatherByCoords = async (lat: number, lon: number): Promise<WeatherApiResponse> => {
-  return fetchWeatherData(`lat=${lat}&lon=${lon}`);
+  const data = await fetchWeatherData(`lat=${lat}&lon=${lon}`);
+  
+  // Try to get a proper city name via reverse geocoding
+  try {
+    const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`);
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      if (geoData && geoData.length > 0 && geoData[0].name) {
+        data.location = geoData[0].name;
+      }
+    }
+  } catch (error) {
+    console.error('Reverse geocoding failed:', error);
+  }
+  
+  return data;
 };
 
 export interface CitySearchResult {
