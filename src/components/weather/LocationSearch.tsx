@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useWeather } from '@/context/WeatherContext';
 import { PRESET_CITIES, weatherScenarios, findNearestCity } from '@/data/mockWeather';
 import { searchCities, CitySearchResult } from '@/services/weatherApi';
-import { MapPin, Search, Navigation, Loader2 } from 'lucide-react';
+import { MapPin, Search, Navigation, Loader2, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import WeatherIcon from './WeatherIcon';
 
@@ -19,7 +19,7 @@ const useDebounce = (value: string, delay: number) => {
 };
 
 const LocationSearch: React.FC = () => {
-  const { selectCity, selectCityByCoords, selectedCity, convertTemp, unit, useRealApi } = useWeather();
+  const { selectCity, selectCityByCoords, selectedCity, convertTemp, unit, useRealApi, savedCities, addSavedCity, removeSavedCity } = useWeather();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
@@ -196,28 +196,43 @@ const LocationSearch: React.FC = () => {
 
       {/* Quick Access Pills */}
       <div className="flex gap-2 flex-wrap">
-        {PRESET_CITIES.map(city => {
-          const data = weatherScenarios[city.name];
+        {savedCities.map(city => {
           const isSelected = selectedCity === city.name;
           return (
-            <motion.button
+            <motion.div
               key={city.name}
-              onClick={() => selectCity(city.name)}
-              whileTap={{ scale: 0.97 }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-300
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className={`flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-300
                 ${isSelected
                   ? 'glass-static border-primary/40 shadow-[0_0_20px_-5px_hsl(187_85%_53%_/_0.3)] scale-105'
                   : 'glass-static hover:bg-white/[0.06]'
                 }`}
             >
-              <WeatherIcon condition={data.current.condition} size={14} />
-              <span className={isSelected ? 'text-foreground' : 'text-muted-foreground'}>{city.name}</span>
-              <span className={`text-[11px] ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
-                {convertTemp(data.current.temp)}°
-              </span>
-            </motion.button>
+              <button onClick={() => selectCity(city.name)} className={`truncate max-w-[100px] ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {city.name}
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); removeSavedCity(city.name); }} 
+                className={`p-1 rounded-full transition-colors ${isSelected ? 'text-primary hover:bg-primary/20' : 'text-muted-foreground hover:bg-white/10 hover:text-red-400'}`}
+                aria-label="Remove city"
+              >
+                <X size={12} strokeWidth={2} />
+              </button>
+            </motion.div>
           );
         })}
+        {savedCities.length < 5 && (!savedCities.some(c => c.name === selectedCity)) && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => addSavedCity({ name: selectedCity })}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 glass-static border-dashed border-white/20 hover:border-white/40 hover:bg-white/[0.06] text-muted-foreground"
+          >
+            <Plus size={14} />
+            <span className="truncate max-w-[100px]">Save {selectedCity}</span>
+          </motion.button>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { WeatherCondition } from '@/data/mockWeather';
 
 const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
@@ -91,19 +92,18 @@ export interface WeatherApiResponse {
   }>;
 }
 
-// Fetch current weather by city name
-export const fetchWeatherByCity = async (city: string): Promise<WeatherApiResponse> => {
+const fetchWeatherData = async (query: string): Promise<WeatherApiResponse> => {
   if (!API_KEY) {
     throw new Error('OpenWeather API key is not configured. Please add VITE_OPENWEATHER_API_KEY to your .env file');
   }
 
   // Current weather
   const currentRes = await fetch(
-    `${BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=imperial`
+    `${BASE_URL}/weather?${query}&appid=${API_KEY}&units=imperial`
   );
 
   if (!currentRes.ok) {
-    if (currentRes.status === 404) throw new Error('City not found');
+    if (currentRes.status === 404) throw new Error('Location not found');
     if (currentRes.status === 401) throw new Error('Invalid API key');
     throw new Error('Failed to fetch weather data');
   }
@@ -112,7 +112,7 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
 
   // 5-day forecast (includes 3-hour intervals)
   const forecastRes = await fetch(
-    `${BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=imperial`
+    `${BASE_URL}/forecast?${query}&appid=${API_KEY}&units=imperial`
   );
 
   if (!forecastRes.ok) {
@@ -217,24 +217,14 @@ export const fetchWeatherByCity = async (city: string): Promise<WeatherApiRespon
   };
 };
 
+// Fetch current weather by city name
+export const fetchWeatherByCity = async (city: string): Promise<WeatherApiResponse> => {
+  return fetchWeatherData(`q=${encodeURIComponent(city)}`);
+};
+
 // Fetch weather by coordinates (for geolocation)
 export const fetchWeatherByCoords = async (lat: number, lon: number): Promise<WeatherApiResponse> => {
-  if (!API_KEY) {
-    throw new Error('OpenWeather API key is not configured');
-  }
-
-  const currentRes = await fetch(
-    `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`
-  );
-
-  if (!currentRes.ok) {
-    throw new Error('Failed to fetch weather data');
-  }
-
-  const currentData = await currentRes.json();
-
-  // Reuse the city fetch logic but with the city name from coordinates
-  return fetchWeatherByCity(currentData.name);
+  return fetchWeatherData(`lat=${lat}&lon=${lon}`);
 };
 
 export interface CitySearchResult {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { WeatherCondition } from '@/data/mockWeather';
+import { Sun } from 'lucide-react';
 
 interface Props {
   condition: WeatherCondition;
@@ -7,16 +8,17 @@ interface Props {
 
 const conditionStyles: Record<WeatherCondition, { gradient: string; elements: React.ReactNode }> = {
   sunny: {
-    gradient: 'from-amber-400/20 via-yellow-500/10 to-orange-400/20',
+    gradient: 'from-amber-400/30 via-yellow-500/20 to-orange-400/30',
     elements: (
-      <>
-        <div className="absolute inset-0 animate-sun-rotate" style={{
-          background: 'conic-gradient(from 0deg, transparent, hsl(45 90% 60% / 0.3), transparent, hsl(45 90% 60% / 0.2), transparent, hsl(45 90% 60% / 0.3), transparent)',
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Sun 
+          className="w-32 h-32 md:w-40 md:h-40 text-amber-400 animate-sun-rotate drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" 
+          strokeWidth={1.5} 
+        />
+        <div className="absolute inset-0 rounded-full animate-sun-pulse pointer-events-none" style={{
+          background: 'radial-gradient(circle, hsl(45 95% 65% / 0.2), transparent 60%)',
         }} />
-        <div className="absolute inset-[15%] rounded-full animate-sun-pulse" style={{
-          background: 'radial-gradient(circle, hsl(45 95% 65% / 0.6), hsl(35 90% 55% / 0.2), transparent)',
-        }} />
-      </>
+      </div>
     ),
   },
   'clear-night': {

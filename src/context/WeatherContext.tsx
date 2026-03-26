@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { WeatherData, weatherScenarios, WeatherAlert } from '@/data/mockWeather';
 import { fetchWeatherByCity, fetchWeatherByCoords, WeatherApiResponse } from '@/services/weatherApi';
@@ -71,6 +72,10 @@ if (import.meta.env.PROD) {
   console.log('WeatherContext: Running in production mode');
 }
 
+export interface SavedCity {
+  name: string;
+}
+
 interface WeatherContextType {
   weather: WeatherData | null;
   loading: boolean;
@@ -85,6 +90,9 @@ interface WeatherContextType {
   dismissedAlerts: string[];
   ready: boolean;
   useRealApi: boolean;
+  savedCities: SavedCity[];
+  addSavedCity: (city: SavedCity) => void;
+  removeSavedCity: (name: string) => void;
 }
 
 const WeatherContext = createContext<WeatherContextType | null>(null);
@@ -104,6 +112,29 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [useRealApi] = useState(hasApiKey);
+
+  const [savedCities, setSavedCities] = useState<SavedCity[]>(() => {
+    const saved = localStorage.getItem('weatherDash_savedCities');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const addSavedCity = useCallback((city: SavedCity) => {
+    setSavedCities(prev => {
+      if (prev.length >= 5) return prev;
+      if (prev.some(c => c.name === city.name)) return prev;
+      const newCities = [...prev, city];
+      localStorage.setItem('weatherDash_savedCities', JSON.stringify(newCities));
+      return newCities;
+    });
+  }, []);
+
+  const removeSavedCity = useCallback((name: string) => {
+    setSavedCities(prev => {
+      const newCities = prev.filter(c => c.name !== name);
+      localStorage.setItem('weatherDash_savedCities', JSON.stringify(newCities));
+      return newCities;
+    });
+  }, []);
 
   const selectCity = useCallback(async (city: string) => {
     setLoading(true);
@@ -186,6 +217,9 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
         dismissedAlerts,
         ready,
         useRealApi,
+        savedCities,
+        addSavedCity,
+        removeSavedCity,
       }}
     >
       {children}

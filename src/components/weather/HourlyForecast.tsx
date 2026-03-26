@@ -1,11 +1,21 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useWeather } from '@/context/WeatherContext';
 import { motion } from 'framer-motion';
 import WeatherIcon from './WeatherIcon';
 
 const HourlyForecast: React.FC = () => {
   const { weather, convertTemp, loading } = useWeather();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      setContainerWidth(entries[0].contentRect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [loading, weather]);
 
   if (loading || !weather) {
     return (
@@ -30,12 +40,15 @@ const HourlyForecast: React.FC = () => {
   const range = maxT - minT || 1;
 
   // Build SVG bezier curve
-  const curveWidth = weather.hourly.length * 56;
+  const minCurveWidth = weather.hourly.length * 56;
+  const curveWidth = Math.max(minCurveWidth, containerWidth);
+  const segmentWidth = curveWidth / weather.hourly.length;
+
   const curveHeight = 60;
   const padding = 8;
 
   const points = temps.map((t, i) => ({
-    x: 28 + i * 56,
+    x: (segmentWidth / 2) + i * segmentWidth,
     y: curveHeight - padding - ((t - minT) / range) * (curveHeight - padding * 2),
   }));
 
@@ -71,7 +84,7 @@ const HourlyForecast: React.FC = () => {
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         24-Hour Forecast
       </h3>
-      <div ref={scrollRef} className="overflow-x-auto snap-scroll pb-2 -mx-1 px-1">
+      <div ref={containerRef} className="overflow-x-auto snap-scroll pb-2 -mx-1 px-1">
         <div style={{ width: curveWidth, minWidth: curveWidth }} className="relative">
           {/* Bezier curve */}
           <svg width={curveWidth} height={curveHeight} className="absolute top-0 left-0">
@@ -91,7 +104,7 @@ const HourlyForecast: React.FC = () => {
           {/* Labels row */}
           <div className="flex pt-[68px]">
             {weather.hourly.map((hour, i) => (
-              <div key={i} className="flex flex-col items-center min-w-[56px] gap-1">
+              <div key={i} style={{ width: segmentWidth }} className="flex flex-col items-center gap-1">
                 <span className="text-xs font-medium text-foreground">{temps[i]}°</span>
                 <WeatherIcon condition={hour.condition} size={14} />
                 <span className="text-[10px] text-muted-foreground">{hour.time}</span>
