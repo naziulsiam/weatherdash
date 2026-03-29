@@ -12,6 +12,7 @@ import WeatherMetrics from '@/components/weather/WeatherMetrics';
 import BrandLogo from '@/components/weather/BrandLogo';
 import WeatherLoader from '@/components/weather/WeatherLoader';
 import LocationPrompt from '@/components/weather/LocationPrompt';
+import ThemeToggle from '@/components/weather/ThemeToggle';
 
 const stagger = {
   hidden: {},
@@ -51,11 +52,14 @@ const Dashboard: React.FC = () => {
         {/* Sticky Header */}
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-between gap-4 mb-6 sticky top-0 z-30 py-3 -mx-4 px-4"
+          className="flex items-center justify-between gap-4 mb-8 sticky top-0 z-30 py-3 -mx-4 px-4"
           style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
         >
           <BrandLogo />
-          <TempToggle />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <TempToggle />
+          </div>
         </motion.div>
 
         {/* Location */}
@@ -69,17 +73,17 @@ const Dashboard: React.FC = () => {
         </motion.div>
 
         {/* Hero: Current Weather */}
-        <motion.div variants={fadeUp}>
+        <motion.div variants={fadeUp} className="mb-10">
           <CurrentWeather />
         </motion.div>
 
         {/* Weather Metrics */}
-        <motion.div variants={fadeUp}>
+        <motion.div variants={fadeUp} className="mb-10">
           <WeatherMetrics />
         </motion.div>
 
         {/* Forecasts */}
-        <motion.div variants={fadeUp} className="space-y-4 pb-12">
+        <motion.div variants={fadeUp} className="space-y-6 pb-12">
           <HourlyForecast />
           <DailyForecast />
         </motion.div>

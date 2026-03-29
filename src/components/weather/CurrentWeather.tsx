@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useWeather } from '@/context/WeatherContext';
 import { motion } from 'framer-motion';
-import WeatherVisualizer from './WeatherVisualizer';
 import WeatherConditionBadge from './WeatherConditionBadge';
 import { MapPin } from 'lucide-react';
 
@@ -78,23 +77,14 @@ const CurrentWeather: React.FC = () => {
       transition={{ duration: 0.5, delay: 0.2 }}
       className="py-6 md:py-10"
     >
-      <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
-        {/* Visualizer */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <WeatherVisualizer condition={current.condition} />
-        </motion.div>
-
+      <div className="flex flex-col items-center justify-center text-center">
         {/* Info */}
-        <div className="flex-1 text-center md:text-left">
+        <div className="flex-1">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center md:justify-start gap-2 mb-2"
+            className="flex items-center justify-center gap-2 mb-2"
           >
             <MapPin size={14} strokeWidth={1.5} className="text-primary" />
             <span className="text-sm font-medium text-foreground">{location}, {country}</span>
@@ -103,11 +93,11 @@ const CurrentWeather: React.FC = () => {
 
           <div className="mb-2">
             {ready ? (
-              <span className="text-[96px] md:text-[120px] font-extralight tracking-tighter text-foreground leading-none animate-count-up inline-block">
+              <span className="text-[96px] md:text-[140px] font-extralight tracking-tighter text-foreground leading-none animate-count-up inline-block">
                 <CountUpTemp value={temp} />°
               </span>
             ) : (
-              <span className="text-[96px] md:text-[120px] font-extralight tracking-tighter text-foreground leading-none opacity-30">
+              <span className="text-[96px] md:text-[140px] font-extralight tracking-tighter text-foreground leading-none opacity-30">
                 --°
               </span>
             )}
@@ -118,7 +108,7 @@ const CurrentWeather: React.FC = () => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mb-3"
+            className="mb-4"
           >
             <WeatherConditionBadge />
           </motion.div>
@@ -127,7 +117,7 @@ const CurrentWeather: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-base text-muted-foreground mb-1"
+            className="text-lg text-muted-foreground mb-1 font-medium"
           >
             {current.description}
           </motion.p>

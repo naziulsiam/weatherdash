@@ -8,7 +8,7 @@ const BrandLogo: React.FC = () => (
     transition={{ duration: 0.6 }}
     className="flex items-center gap-2"
   >
-    <span className="brand-gradient text-2xl font-bold tracking-tight">
+    <span className="brand-gradient text-2xl md:text-3xl font-extrabold tracking-tight">
       WeatherDash
     </span>
   </motion.div>

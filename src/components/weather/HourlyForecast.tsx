@@ -90,14 +90,14 @@ const HourlyForecast: React.FC = () => {
           <svg width={curveWidth} height={curveHeight} className="absolute top-0 left-0">
             <defs>
               <linearGradient id="curveGradFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(187, 85%, 53%)" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="hsl(187, 85%, 53%)" stopOpacity="0" />
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={areaPath} fill="url(#curveGradFill)" />
-            <path d={curvePath} fill="none" stroke="hsl(187, 85%, 53%)" strokeWidth="2" strokeLinecap="round" />
+            <path d={curvePath} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
             {points.map((p, i) => (
-              <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="hsl(187, 85%, 53%)" opacity="0.8" />
+              <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="hsl(var(--primary))" opacity="0.8" />
             ))}
           </svg>
 

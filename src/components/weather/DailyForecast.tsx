@@ -65,7 +65,7 @@ const DailyForecast: React.FC = () => {
                     style={{
                       left: `${lowPct}%`,
                       right: `${100 - highPct}%`,
-                      background: 'linear-gradient(to right, hsl(210 80% 60%), hsl(187 85% 53%), hsl(30 90% 60%))',
+                      background: 'linear-gradient(to right, hsl(210 80% 60%), hsl(var(--primary)), hsl(30 90% 60%))',
                     }}
                   />
                 </div>
