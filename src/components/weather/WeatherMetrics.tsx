@@ -59,7 +59,7 @@ const getUvInfo = (uv: number) => {
 };
 
 const WeatherMetrics: React.FC = () => {
-  const { weather, loading } = useWeather();
+  const { weather, loading, convertTemp } = useWeather();
 
   if (loading || !weather) {
     return (
@@ -130,7 +130,7 @@ const WeatherMetrics: React.FC = () => {
       <MetricCard
         icon={<Thermometer size={16} strokeWidth={1.5} className="text-orange-400" />}
         label="Dew Point"
-        value={`${current.dewPoint}°`}
+        value={`${convertTemp(current.dewPoint)}°`}
         subtitle="Moisture level"
         delay={baseDelay + 0.25}
         sparkValues={sparklines.temp.values}

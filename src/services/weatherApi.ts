@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { WeatherCondition } from '@/data/mockWeather';
 
-const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
-const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+// API Key is now securely stored on the server via Vercel Serverless Functions
+const BASE_URL = '/api/weather';
+const GEO_URL = '/api/geo';
 
 // Map OpenWeather condition codes to our app's conditions
 // Map OpenWeather condition codes to our app's conditions
@@ -93,13 +94,9 @@ export interface WeatherApiResponse {
 }
 
 const fetchWeatherData = async (query: string): Promise<WeatherApiResponse> => {
-  if (!API_KEY) {
-    throw new Error('OpenWeather API key is not configured. Please add VITE_OPENWEATHER_API_KEY to your .env file');
-  }
-
   // Current weather
   const currentRes = await fetch(
-    `${BASE_URL}/weather?${query}&appid=${API_KEY}&units=imperial`
+    `${BASE_URL}?type=weather&${query}`
   );
 
   if (!currentRes.ok) {
@@ -112,7 +109,7 @@ const fetchWeatherData = async (query: string): Promise<WeatherApiResponse> => {
 
   // 5-day forecast (includes 3-hour intervals)
   const forecastRes = await fetch(
-    `${BASE_URL}/forecast?${query}&appid=${API_KEY}&units=imperial`
+    `${BASE_URL}?type=forecast&${query}`
   );
 
   if (!forecastRes.ok) {
@@ -239,7 +236,7 @@ export const fetchWeatherByCoords = async (lat: number, lon: number): Promise<We
   
   // Try to get a proper city name via reverse geocoding
   try {
-    const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`);
+    const geoRes = await fetch(`${GEO_URL}?type=reverse&lat=${lat}&lon=${lon}&limit=1`);
     if (geoRes.ok) {
       const geoData = await geoRes.json();
       if (geoData && geoData.length > 0 && geoData[0].name) {
@@ -263,17 +260,13 @@ export interface CitySearchResult {
 
 // Search cities using OpenWeather Geocoding API
 export const searchCities = async (query: string): Promise<CitySearchResult[]> => {
-  if (!API_KEY) {
-    return [];
-  }
-
   if (!query || query.length < 2) {
     return [];
   }
 
   try {
     const response = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`
+      `${GEO_URL}?type=direct&q=${encodeURIComponent(query)}&limit=5`
     );
 
     if (!response.ok) {

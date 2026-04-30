@@ -223,7 +223,7 @@ const LocationSearch: React.FC = () => {
             </motion.div>
           );
         })}
-        {savedCities.length < 5 && (!savedCities.some(c => c.name === selectedCity)) && (
+        {savedCities.length < 5 && (!savedCities.some(c => c.name.trim().toLowerCase() === selectedCity.trim().toLowerCase())) && (
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => addSavedCity({ name: selectedCity })}

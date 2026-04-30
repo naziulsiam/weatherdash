@@ -61,15 +61,11 @@ const convertApiResponse = (apiData: WeatherApiResponse): WeatherData => {
   };
 };
 
-// Check if we have an API key
-const hasApiKey = !!import.meta.env.VITE_OPENWEATHER_API_KEY;
-console.log('WeatherContext: hasApiKey =', hasApiKey);
+// Always attempt to use the secure serverless API proxy; it will fallback to mock data on error.
+const hasApiKey = true;
+
 if (import.meta.env.PROD) {
-  console.log('WeatherContext: Running in production mode');
-}
-console.log('WeatherContext: hasApiKey =', hasApiKey);
-if (import.meta.env.PROD) {
-  console.log('WeatherContext: Running in production mode');
+  console.log('WeatherContext: Running in production mode with Serverless API Proxy');
 }
 
 export interface SavedCity {
@@ -121,7 +117,7 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addSavedCity = useCallback((city: SavedCity) => {
     setSavedCities(prev => {
       if (prev.length >= 5) return prev;
-      if (prev.some(c => c.name === city.name)) return prev;
+      if (prev.some(c => c.name.trim().toLowerCase() === city.name.trim().toLowerCase())) return prev;
       const newCities = [...prev, city];
       localStorage.setItem('weatherDash_savedCities', JSON.stringify(newCities));
       return newCities;
