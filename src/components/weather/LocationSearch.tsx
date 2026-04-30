@@ -24,6 +24,7 @@ const LocationSearch: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 300);
 
@@ -54,8 +55,11 @@ const LocationSearch: React.FC = () => {
 
   const handleGeolocate = () => {
     if ('geolocation' in navigator) {
+      setIsSearching(true);
+      setGeoError(null);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          setIsSearching(false);
           const { latitude, longitude } = position.coords;
           
           if (useRealApi) {
@@ -73,9 +77,18 @@ const LocationSearch: React.FC = () => {
             selectCity(nearestCity.name);
           }
         },
-        () => console.log('Geolocation denied'),
+        (error) => {
+          setIsSearching(false);
+          let msg = "Location access denied. Please enable location services.";
+          if (error.code === error.TIMEOUT) msg = "Location request timed out. Try again.";
+          setGeoError(msg);
+          setTimeout(() => setGeoError(null), 4000);
+        },
         { timeout: 10000, enableHighAccuracy: false }
       );
+    } else {
+      setGeoError("Geolocation is not supported by your browser.");
+      setTimeout(() => setGeoError(null), 4000);
     }
   };
 
@@ -126,6 +139,15 @@ const LocationSearch: React.FC = () => {
             </div>
           </button>
         </div>
+
+        {geoError && (
+          <motion.p 
+            initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+            className="absolute -bottom-6 right-0 text-[11px] text-red-400 font-medium"
+          >
+            {geoError}
+          </motion.p>
+        )}
 
         {showDropdown && searchQuery.length >= 2 && (
           <motion.div
