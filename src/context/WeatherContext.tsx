@@ -181,6 +181,7 @@ export const WeatherProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.error('WeatherContext: fetchWeatherByCoords error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
         setLoading(false);
+        throw err;
       }
     }
   }, [useRealApi]);

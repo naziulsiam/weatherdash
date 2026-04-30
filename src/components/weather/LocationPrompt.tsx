@@ -50,9 +50,11 @@ const LocationPrompt: React.FC = () => {
             setShow(false);
           } catch (error) {
             console.error('LocationPrompt: selectCity Error', error);
+            console.log('LocationPrompt: Falling back to nearest mock city');
+            const nearestCity = findNearestCity(latitude, longitude);
+            selectCity(nearestCity.name);
             setIsFetching(false);
-            setErrorMessage('Could not find weather for your location. Please try manual search.');
-            setTimeout(() => setShow(false), 3000);
+            setShow(false);
           }
         },
         (error) => {
