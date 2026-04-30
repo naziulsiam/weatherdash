@@ -61,8 +61,9 @@ const LocationPrompt: React.FC = () => {
           console.error('LocationPrompt: Geolocation error:', error);
           setIsFetching(false);
           let msg = 'Location access denied or failed.';
-          if (error.code === error.PERMISSION_DENIED) msg = 'Location permission was denied.';
-          if (error.code === error.TIMEOUT) msg = 'Location request timed out.';
+          if (error.code === 1 || error.code === error.PERMISSION_DENIED) msg = 'Location permission was denied.';
+          if (error.code === 2 || error.code === error.POSITION_UNAVAILABLE) msg = 'Location information is unavailable on this device.';
+          if (error.code === 3 || error.code === error.TIMEOUT) msg = 'Location request timed out.';
           setErrorMessage(msg);
           setTimeout(() => setShow(false), 3000);
         },

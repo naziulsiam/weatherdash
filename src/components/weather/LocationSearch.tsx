@@ -80,7 +80,8 @@ const LocationSearch: React.FC = () => {
         (error) => {
           setIsSearching(false);
           let msg = "Location access denied. Please enable location services.";
-          if (error.code === error.TIMEOUT) msg = "Location request timed out. Try again.";
+          if (error.code === 2 || error.code === error.POSITION_UNAVAILABLE) msg = "Location information is unavailable on this device.";
+          if (error.code === 3 || error.code === error.TIMEOUT) msg = "Location request timed out. Try again.";
           setGeoError(msg);
           setTimeout(() => setGeoError(null), 4000);
         },
